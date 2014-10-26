@@ -1,0 +1,51 @@
+---
+title: "Practical Machine Learning - Project Writeup"
+author: "Jerold Paulson"
+date: "Sunday, October 26, 2014"
+output: html_document
+---
+First we will define some functions that will be used to clean up the data
+We will remove all columns with NAs present.
+```{r cache=TRUE}
+filterPml       <- function(x) { read.csv(x, na.strings = c("", "NA", "#DIV/0!") ) }
+removeNAColumns     <- function(x) { x[ , colSums( is.na(x) ) < nrow(x) ] }
+onlyCompleteRows       <- function(x) {x[,sapply(x, function(y) !any(is.na(y)))] }
+```
+Now we will read in the data from the csv files already downloaded from the web
+```{r, cache=TRUE}
+trainData      <- filterPml("pml-training.csv")
+testData       <- filterPml("pml-testing.csv")
+```
+Next, we will remove columns 1,2,5 and 6 : 1,2 and 6 are not predictive variables, 5 is redundant
+``` {r,cache=TRUE}
+training       <- trainData[,-c(1,2,5,6)]
+testing        <- testData[,-c(1,2,5,6)]
+```
+Now, let's partition the training set data for evaluative purposes into training and testing 70/30
+```{r,cache=TRUE}
+library(caret)
+trainIndex  <- createDataPartition(training$classe, p=.70, list=FALSE)
+trainingSubset <- training[ trainIndex,]
+testingSubset  <- training[-trainIndex,]
+```
+Now filter out the NA Columns / incomplete rows
+```{r,cache=TRUE}
+trainingSubset <- onlyCompleteRows(removeNAColumns(trainingSubset))
+testingSubset  <- onlyCompleteRows(removeNAColumns(testingSubset))
+```
+Next we do the actual training and look at the accuracy on the test subset of the practice data
+```{r, cache=TRUE}
+library(randomForest)
+library(e1071)
+boost <- train(classe~.,data=trainingSubset,method="gbm",verbose=FALSE,trControl=trainControl(method="cv",repeats=10))
+```
+Let's now look at the results of the analysis and the quality of the predictions
+``` {r}
+print(summary(boost))
+print(confusionMatrix(predict(boost,newdata=testingSubset[,-56]),testingSubset$classe))
+```
+Lastly, we find the actual predictions for the 20 test cases used for the assignment
+``` {r}
+answer <- predict(boost, newdata=testData)
+print(answer)
+```
