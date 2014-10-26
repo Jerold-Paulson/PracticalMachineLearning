@@ -13,8 +13,8 @@ onlyCompleteRows       <- function(x) {x[,sapply(x, function(y) !any(is.na(y)))]
 ```
 Now we will read in the data from the csv files already downloaded from the web
 ```{r, cache=TRUE}
-trainData      <- filterPml("pml-training.csv")
-testData       <- filterPml("pml-testing.csv")
+trainData      <- filterPml("../pml-training.csv")
+testData       <- filterPml("../pml-testing.csv")
 ```
 Next, we will remove columns 1,2,5 and 6 : 1,2 and 6 are not predictive variables, 5 is redundant
 ``` {r,cache=TRUE}
@@ -44,8 +44,10 @@ Let's now look at the results of the analysis and the quality of the predictions
 print(summary(boost))
 print(confusionMatrix(predict(boost,newdata=testingSubset[,-56]),testingSubset$classe))
 ```
+The overall accuracy, small p-value, and high sensitivity and specificity indicate that the predictive value should be very good.
 Lastly, we find the actual predictions for the 20 test cases used for the assignment
 ``` {r}
 answer <- predict(boost, newdata=testData)
 print(answer)
 ```
+It turns out that in the set of 20 test cases, the model predicted the correct class 100% of the time.
