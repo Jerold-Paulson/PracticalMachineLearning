@@ -1,7 +1,9 @@
 base
-datasets
-graphics
-grDevices
-methods
-stats
-utils
+caret
+e1071
+gbm
+ggplot2
+lattice
+plyr
+randomForest
+survival
